@@ -10,6 +10,11 @@
 
 DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
 {
+    m_currIndex = 0;
+    m_user = 0;
+    m_process = 0;
+    m_player = Phonon::createPlayer( Phonon::MusicCategory, Phonon::MediaSource("") );
+
     ui.setupUi( this );
     connect( ui.favoriteButton, SIGNAL(clicked()),
              this, SLOT(favoriteButtonClicked()) );
@@ -17,16 +22,14 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
              this, SLOT(forgetButtonClicked()) );
     connect( ui.nextButton, SIGNAL(clicked()),
              this, SLOT(nextButtonClicked()) );
+    connect( m_player, SIGNAL(aboutToFinish()),
+             this, SLOT(enqueueNextSource()) );
 
     for( int i = 0; i < DOUBAN_MANAGER_NUMBER; ++i ) {
         m_managers[i] = 0;
     }
 
     getChannels();
-    m_currIndex = 0;
-    m_user = 0;
-    m_process = 0;
-    m_player = Phonon::createPlayer( Phonon::MusicCategory, Phonon::MediaSource("") );
 }
 
 DoubanFM::~DoubanFM()
@@ -109,7 +112,7 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
     //QTextCodec *codec = QTextCodec::codecForName( "utf-8" );
     //QString all = codec->toUnicode( reply->readAll() );
     QJson::Parser parser;
-    QList<DoubanFMSong> songs;
+    //QList<DoubanFMSong> songs;
     bool ok;
     QByteArray json = reply->readAll();
     QVariant result = parser.parse( json, &ok );
@@ -143,13 +146,12 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
         s.aid = song["aid"].toUInt();
         s.albumtitle = song["albumtitle"].toString();
         s.like = song["like"].toBool();
-        songs.push_back(s);
+        m_songs.push_back(s);
         //qDebug() << s.url;
     }
 
-    //emit receivedNewList(songs);
     reply->deleteLater();
-    play( songs );
+    play( m_songs );
 }
 
 void DoubanFM::play( const QList<DoubanFMSong>& rcvsongs )
@@ -159,8 +161,11 @@ void DoubanFM::play( const QList<DoubanFMSong>& rcvsongs )
     {
         url = song.url;
         m_player->setCurrentSource( Phonon::MediaSource(url) );
-        m_player->play();
+        m_player->enqueue(url);
     }
+
+    //qDebug() << "playing";
+    m_player->play();
 }
 
 void DoubanFM::favoriteButtonClicked()
@@ -176,4 +181,9 @@ void DoubanFM::forgetButtonClicked()
 void DoubanFM::nextButtonClicked()
 {
 
+}
+
+void DoubanFM::enqueueNextSource()
+{
+    //m_player->enqueue("")
 }

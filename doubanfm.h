@@ -30,6 +30,7 @@ class DoubanFM : public QDialog
         void nextButtonClicked();
         void onReceivedChannels( QNetworkReply * );
         void onReceivedNewList( QNetworkReply * );
+        void enqueueNextSource();
     private:
         void play( const QList<DoubanFMSong>& rcvsongs );
 
@@ -49,6 +50,8 @@ class DoubanFM : public QDialog
          */
         QNetworkAccessManager *m_managers[DOUBAN_MANAGER_NUMBER];
         QList<DoubanChannel> m_channels;
+        QList<DoubanFMSong> m_songs;
+
         int m_currIndex;
         DoubanUser *m_user;
         QProcess *m_process;

@@ -7,7 +7,7 @@ int main( int argc ,char *argv[] )
     app.setApplicationName("DoubanFM");
 
     DoubanFM doubanfm;
-    doubanfm.show();
+    //doubanfm.show();
 
     return app.exec();
 }
