@@ -1,0 +1,9 @@
+*
+!*/
+!*.c
+!*.h
+!*.cpp
+!*.pro
+!*.ui
+moc*.h
+moc*.cpp
