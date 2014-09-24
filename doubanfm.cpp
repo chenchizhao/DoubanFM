@@ -76,9 +76,9 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
     std::sort( m_channels.begin(), m_channels.end(),
             compareChannels );
 
-    foreach( const DoubanChannel &dc, m_channels ) {
-        qDebug() << dc.name;
-    }
+    //foreach( const DoubanChannel &dc, m_channels ) {
+    //    qDebug() << dc.name;
+    //}
 
     reply->deleteLater();
 
@@ -144,7 +144,7 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
         s.albumtitle = song["albumtitle"].toString();
         s.like = song["like"].toBool();
         songs.push_back(s);
-        qDebug() << s.url;
+        //qDebug() << s.url;
     }
 
     //emit receivedNewList(songs);
