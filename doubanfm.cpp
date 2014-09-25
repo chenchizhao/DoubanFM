@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <QDebug>
+#include <unistd.h>
 
 DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
 {
