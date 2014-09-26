@@ -8,8 +8,8 @@ int main( int argc ,char *argv[] )
     app.setApplicationName("DoubanFM");
 
     DoubanFM doubanfm;
-    //doubanfm.show();
-    //
+    doubanfm.show();
+    
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
 

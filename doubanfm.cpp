@@ -11,7 +11,8 @@
 
 DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
 {
-    m_currIndex = 0;
+    m_channelIndex = 0;
+    m_songIndex = 0;
     m_user = 0;
     m_process = 0;
     m_player = Phonon::createPlayer( Phonon::MusicCategory, Phonon::MediaSource("") );
@@ -23,8 +24,15 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
              this, SLOT(forgetButtonClicked()) );
     connect( ui.nextButton, SIGNAL(clicked()),
              this, SLOT(nextButtonClicked()) );
+    //connect( m_player, SIGNAL(aboutToFinish()),
+    //         this, SLOT(enqueueNextSource()) );
+    connect( this, SIGNAL(readyToPlay()),
+             this, SLOT(playSong()) );
+    //connect( m_player, SIGNAL(finished()),
     connect( m_player, SIGNAL(aboutToFinish()),
-             this, SLOT(enqueueNextSource()) );
+             this, SLOT(onPlayQueueFinished()) );
+    //connect( m_player, SIGNAL(currentSourceChanged(const Phonon::MediaObject &)),
+    //         this, SLOT(onCurrentSourceChanged(const Phonon::MediaObject &)) );
 
     for( int i = 0; i < DOUBAN_MANAGER_NUMBER; ++i ) {
         m_managers[i] = 0;
@@ -86,7 +94,7 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
 
     reply->deleteLater();
 
-    qint32 channel = m_channels[m_currIndex].channel_id;
+    qint32 channel = m_channels[m_channelIndex].channel_id;
     getNewPlayList( channel );
 }
 
@@ -113,7 +121,6 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
     //QTextCodec *codec = QTextCodec::codecForName( "utf-8" );
     //QString all = codec->toUnicode( reply->readAll() );
     QJson::Parser parser;
-    //QList<DoubanFMSong> songs;
     bool ok;
     QByteArray json = reply->readAll();
     QVariant result = parser.parse( json, &ok );
@@ -148,24 +155,23 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
         s.albumtitle = song["albumtitle"].toString();
         s.like = song["like"].toBool();
         m_songs.push_back(s);
-        //qDebug() << s.url;
     }
 
     reply->deleteLater();
-    play( m_songs );
+    emit readyToPlay();
 }
 
-void DoubanFM::play( const QList<DoubanFMSong>& rcvsongs )
+void DoubanFM::playSong()
 {
     QString url;
-    foreach( const DoubanFMSong &song, rcvsongs )    
+    foreach( const DoubanFMSong &song, m_songs )    
     {
         url = song.url;
-        m_player->setCurrentSource( Phonon::MediaSource(url) );
+        //m_player->setCurrentSource( Phonon::MediaSource(url) );
         m_player->enqueue(url);
     }
 
-    //qDebug() << "playing";
+    qDebug() << "playing";
     m_player->play();
 }
 
@@ -181,10 +187,12 @@ void DoubanFM::forgetButtonClicked()
 
 void DoubanFM::nextButtonClicked()
 {
-
+    ++m_songIndex;
+    m_player->setCurrentSource( Phonon::MediaSource(m_songs[m_songIndex].url) );
+    m_player->play();
 }
 
-void DoubanFM::enqueueNextSource()
+void DoubanFM::onPlayQueueFinished()
 {
-    //m_player->enqueue("")
+    getNewPlayList( m_channels[m_channelIndex].channel_id );
 }

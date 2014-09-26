@@ -21,19 +21,18 @@ class DoubanFM : public QDialog
         ~DoubanFM();
         void getChannels();
         void getNewPlayList( const qint32 &channel, qint32 kbps = 64 );
-
-//signals:
-        //void receivedNewList( const QList<DoubanFMSong> &songs );
+    signals:
+        void readyToPlay();
     private slots:
         void favoriteButtonClicked();
         void forgetButtonClicked();
         void nextButtonClicked();
         void onReceivedChannels( QNetworkReply * );
         void onReceivedNewList( QNetworkReply * );
-        void enqueueNextSource();
+        void playSong();
+        void onPlayQueueFinished();
+        //void onCurrentSourceChanged( const Phonon::MediaObject & );
     private:
-        void play( const QList<DoubanFMSong>& rcvsongs );
-
         Ui::DoubanFMDialog ui;
         /*
          * @brief m_managers
@@ -52,7 +51,8 @@ class DoubanFM : public QDialog
         QList<DoubanChannel> m_channels;
         QList<DoubanFMSong> m_songs;
 
-        int m_currIndex;
+        int m_channelIndex;
+        int m_songIndex;
         DoubanUser *m_user;
         QProcess *m_process;
         Phonon::MediaObject *m_player;
