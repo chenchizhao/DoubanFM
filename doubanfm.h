@@ -31,7 +31,9 @@ class DoubanFM : public QDialog
         void onReceivedNewList( QNetworkReply * );
         void playSong();
         void onPlayQueueFinished();
+        void increaseSongIndex( const Phonon::MediaSource & );
         //void onCurrentSourceChanged( const Phonon::MediaObject & );
+        void updateAlbumCover( QNetworkReply * );
     private:
         Ui::DoubanFMDialog ui;
         /*
@@ -48,6 +50,7 @@ class DoubanFM : public QDialog
          * 8: Login/Logout
          */
         QNetworkAccessManager *m_managers[DOUBAN_MANAGER_NUMBER];
+        QNetworkAccessManager *m_pictManager;
         QList<DoubanChannel> m_channels;
         QList<DoubanFMSong> m_songs;
 
@@ -56,6 +59,8 @@ class DoubanFM : public QDialog
         DoubanUser *m_user;
         QProcess *m_process;
         Phonon::MediaObject *m_player;
+
+        bool m_isNextClicked;
 };
 
 #endif

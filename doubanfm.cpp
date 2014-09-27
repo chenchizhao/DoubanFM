@@ -16,6 +16,8 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
     m_user = 0;
     m_process = 0;
     m_player = Phonon::createPlayer( Phonon::MusicCategory, Phonon::MediaSource("") );
+    m_isNextClicked = false;
+    m_pictManager = new QNetworkAccessManager( this );
 
     ui.setupUi( this );
     connect( ui.favoriteButton, SIGNAL(clicked()),
@@ -31,8 +33,10 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
     //connect( m_player, SIGNAL(finished()),
     connect( m_player, SIGNAL(aboutToFinish()),
              this, SLOT(onPlayQueueFinished()) );
-    //connect( m_player, SIGNAL(currentSourceChanged(const Phonon::MediaObject &)),
-    //         this, SLOT(onCurrentSourceChanged(const Phonon::MediaObject &)) );
+    connect( m_player, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)),
+             this, SLOT(increaseSongIndex(const Phonon::MediaSource &)) );
+    connect( m_pictManager, SIGNAL(finished(QNetworkReply *)),
+             this, SLOT(updateAlbumCover(QNetworkReply *)) );
 
     for( int i = 0; i < DOUBAN_MANAGER_NUMBER; ++i ) {
         m_managers[i] = 0;
@@ -173,6 +177,14 @@ void DoubanFM::playSong()
 
     qDebug() << "playing";
     m_player->play();
+
+    ui.nameLabel->setText( m_songs[m_songIndex].title );
+
+    QString mod_url = m_songs[m_songIndex].picture;
+    qDebug() << mod_url;
+    mod_url.replace( "mpic", "lpic" );
+
+    m_pictManager->get( QNetworkRequest(QUrl(mod_url)) );
 }
 
 void DoubanFM::favoriteButtonClicked()
@@ -188,6 +200,7 @@ void DoubanFM::forgetButtonClicked()
 void DoubanFM::nextButtonClicked()
 {
     ++m_songIndex;
+    m_isNextClicked = true;
     m_player->setCurrentSource( Phonon::MediaSource(m_songs[m_songIndex].url) );
     m_player->play();
 }
@@ -195,4 +208,29 @@ void DoubanFM::nextButtonClicked()
 void DoubanFM::onPlayQueueFinished()
 {
     getNewPlayList( m_channels[m_channelIndex].channel_id );
+}
+
+void DoubanFM::increaseSongIndex(const Phonon::MediaSource &mo )
+{
+    Q_UNUSED( mo );
+    if ( !m_isNextClicked )
+        ++m_songIndex;
+    m_isNextClicked = false;
+}
+
+void DoubanFM::updateAlbumCover( QNetworkReply *reply )
+{
+    qDebug() << "updateAlbumCover called";
+    if( reply->error() != QNetworkReply::NoError ) {
+        qDebug() << "Error: Album image receive error";
+        reply->deleteLater();
+        return;
+    }
+
+    const QByteArray data(reply->readAll());
+    if( !data.size() )
+        qDebug() << Q_FUNC_INFO << "received pictures looks like nothing";
+    QImage image = QImage::fromData( data );
+    ui.albumLabel->setPixmap( QPixmap::fromImage(image) );
+    qDebug() << "updateAlbumCover finished";
 }
