@@ -203,6 +203,14 @@ void DoubanFM::nextButtonClicked()
     m_isNextClicked = true;
     m_player->setCurrentSource( Phonon::MediaSource(m_songs[m_songIndex].url) );
     m_player->play();
+
+    ui.nameLabel->setText( m_songs[m_songIndex].title );
+
+    QString mod_url = m_songs[m_songIndex].picture;
+    qDebug() << mod_url;
+    mod_url.replace( "mpic", "lpic" );
+
+    m_pictManager->get( QNetworkRequest(QUrl(mod_url)) );
 }
 
 void DoubanFM::onPlayQueueFinished()
@@ -231,6 +239,10 @@ void DoubanFM::updateAlbumCover( QNetworkReply *reply )
     if( !data.size() )
         qDebug() << Q_FUNC_INFO << "received pictures looks like nothing";
     QImage image = QImage::fromData( data );
-    ui.albumLabel->setPixmap( QPixmap::fromImage(image) );
+
+    int w = ui.albumLabel->width();
+    int h = ui.albumLabel->height();
+
+    ui.albumLabel->setPixmap( QPixmap::fromImage(image).scaled(w, h, Qt::KeepAspectRatio) );
     qDebug() << "updateAlbumCover finished";
 }
