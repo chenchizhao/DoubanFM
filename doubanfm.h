@@ -12,6 +12,7 @@
 static const int DOUBAN_MANAGER_NUMBER = 9;
 static const QString DOUBAN_FM_API_CHANNEL = "https://www.douban.com/j/app/radio/channels";
 static const QString DOUBAN_FM_API_ADDR = "https://www.douban.com/j/app/radio/people";
+static const int PLAYLIST_LENGTH = 5;
 
 class DoubanFM : public QDialog
 {
@@ -60,7 +61,8 @@ class DoubanFM : public QDialog
         QProcess *m_process;
         Phonon::MediaObject *m_player;
 
-        bool m_isNextClicked;
+        bool m_isNextButtonClicked;
+        bool m_noSongPlaying;
 };
 
 #endif

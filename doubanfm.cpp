@@ -12,12 +12,15 @@
 DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
 {
     m_channelIndex = 0;
-    m_songIndex = 0;
+    // the first time to play, signal currentSourceChanged is emitted,
+    // and correspondingly increaseSongIndex is called
+    m_songIndex = -1;
     m_user = 0;
     m_process = 0;
     m_player = Phonon::createPlayer( Phonon::MusicCategory, Phonon::MediaSource("") );
-    m_isNextClicked = false;
+    m_isNextButtonClicked = false;
     m_pictManager = new QNetworkAccessManager( this );
+    m_noSongPlaying = true;
 
     ui.setupUi( this );
     connect( ui.favoriteButton, SIGNAL(clicked()),
@@ -163,6 +166,7 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
 
     reply->deleteLater();
     emit readyToPlay();
+    qDebug() << "queue ready";
 }
 
 void DoubanFM::playSong()
@@ -175,9 +179,15 @@ void DoubanFM::playSong()
         m_player->enqueue(url);
     }
 
-    qDebug() << "playing";
-    m_player->play();
+    if( !m_noSongPlaying )
+    {
+        qDebug() << "playing";
+        m_player->play();
+    }
 
+    m_noSongPlaying = false;
+
+    qDebug() << "m_songIndex = " << m_songIndex;
     ui.nameLabel->setText( m_songs[m_songIndex].title );
 
     QString mod_url = m_songs[m_songIndex].picture;
@@ -199,8 +209,11 @@ void DoubanFM::forgetButtonClicked()
 
 void DoubanFM::nextButtonClicked()
 {
-    ++m_songIndex;
-    m_isNextClicked = true;
+    m_songIndex = (m_songIndex + 1);
+    if( m_songIndex % PLAYLIST_LENGTH == PLAYLIST_LENGTH-1 )
+        getNewPlayList( m_channels[m_channelIndex].channel_id );
+
+    m_isNextButtonClicked = true;
     m_player->setCurrentSource( Phonon::MediaSource(m_songs[m_songIndex].url) );
     m_player->play();
 
@@ -208,6 +221,8 @@ void DoubanFM::nextButtonClicked()
 
     QString mod_url = m_songs[m_songIndex].picture;
     qDebug() << mod_url;
+    // mpic: mini picture
+    // lpic: large picture
     mod_url.replace( "mpic", "lpic" );
 
     m_pictManager->get( QNetworkRequest(QUrl(mod_url)) );
@@ -221,9 +236,13 @@ void DoubanFM::onPlayQueueFinished()
 void DoubanFM::increaseSongIndex(const Phonon::MediaSource &mo )
 {
     Q_UNUSED( mo );
-    if ( !m_isNextClicked )
-        ++m_songIndex;
-    m_isNextClicked = false;
+    if ( !m_isNextButtonClicked )
+        m_songIndex = (m_songIndex+1);
+
+    if( m_songIndex % PLAYLIST_LENGTH  == PLAYLIST_LENGTH-1 )
+        getNewPlayList( m_channels[m_channelIndex].channel_id );
+
+    m_isNextButtonClicked = false;
 }
 
 void DoubanFM::updateAlbumCover( QNetworkReply *reply )
