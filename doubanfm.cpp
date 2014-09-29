@@ -88,10 +88,12 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
         dc.channel_id = ch["channel_id"].toInt();
         dc.abbr_en = ch["abbr_en"].toString();
         m_channels.append(dc);
+        ui.channelBox->addItem( dc.name );
     }
 
     std::sort( m_channels.begin(), m_channels.end(),
             compareChannels );
+
 
     //foreach( const DoubanChannel &dc, m_channels ) {
     //    qDebug() << dc.name;
