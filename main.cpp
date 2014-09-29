@@ -10,8 +10,8 @@ int main( int argc ,char *argv[] )
     DoubanFM doubanfm;
     doubanfm.show();
     
-    //close(STDOUT_FILENO);
-    //close(STDERR_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
 
     return app.exec();
 }
