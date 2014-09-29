@@ -7,3 +7,5 @@
 !*.ui
 moc*.h
 moc*.cpp
+ui_*.h
+ui_*.cpp

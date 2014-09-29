@@ -66,8 +66,6 @@ void DoubanFM::getChannels()
 
 void DoubanFM::onReceivedChannels( QNetworkReply *reply )
 {
-    //QTextCodec *codec = QTextCodec::codecForName( "utf-8" );
-    //QString all = codec->toUnicode( reply->readAll() );
     QJson::Parser parser;
     bool ok;
 
@@ -125,8 +123,6 @@ void DoubanFM::getNewPlayList( const qint32 &channel, qint32 kbps )
 
 void DoubanFM::onReceivedNewList( QNetworkReply *reply )
 {
-    //QTextCodec *codec = QTextCodec::codecForName( "utf-8" );
-    //QString all = codec->toUnicode( reply->readAll() );
     QJson::Parser parser;
     bool ok;
     QByteArray json = reply->readAll();
@@ -179,7 +175,7 @@ void DoubanFM::playSong()
         m_player->enqueue(url);
     }
 
-    if( !m_noSongPlaying )
+    if( m_noSongPlaying )
     {
         qDebug() << "playing";
         m_player->play();
