@@ -7,8 +7,11 @@ Douban FM客户端Linux版
 TODO:
 
 登陆；
+
 加红心；
+
 不再听到；
+
 界面美化。
 
 Qt version: 4.6.3
