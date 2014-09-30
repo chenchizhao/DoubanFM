@@ -8,6 +8,7 @@
 #include "douban_types.h"
 #include <QProcess>
 #include <phonon/mediaobject.h>
+#include <QComboBox>
 
 static const int DOUBAN_MANAGER_NUMBER = 9;
 static const QString DOUBAN_FM_API_CHANNEL = "https://www.douban.com/j/app/radio/channels";
@@ -35,6 +36,7 @@ class DoubanFM : public QDialog
         void increaseSongIndex( const Phonon::MediaSource & );
         //void onCurrentSourceChanged( const Phonon::MediaObject & );
         void updateAlbumCover( QNetworkReply * );
+        void switchChannel( int );
     private:
         Ui::DoubanFMDialog ui;
         /*
