@@ -21,6 +21,7 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
     m_isNextButtonClicked = false;
     m_pictManager = new QNetworkAccessManager( this );
     m_noSongPlaying = true;
+    m_playListLength = 0;
 
     ui.setupUi( this );
     connect( ui.favoriteButton, SIGNAL(clicked()),
@@ -100,10 +101,13 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
 
     qint32 channel = m_channels[m_channelIndex].channel_id;
     getNewPlayList( channel );
+    qDebug() << "102";
 }
 
 void DoubanFM::getNewPlayList( const qint32 &channel, qint32 kbps )
 {
+    qDebug() << "getNewPlayList called";
+
     QString args = QString( "?app_name=radio_desktop_win&version=100" )
         + QString("&user_id=") + ( (m_user) ? m_user->user_id : QString() )
         + QString("&expire=") + ( (m_user) ? m_user->expire : QString() )
@@ -122,6 +126,8 @@ void DoubanFM::getNewPlayList( const qint32 &channel, qint32 kbps )
 
 void DoubanFM::onReceivedNewList( QNetworkReply *reply )
 {
+    m_playListLength = 0;
+
     QJson::Parser parser;
     bool ok;
     QByteArray json = reply->readAll();
@@ -140,6 +146,10 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
         }
     }
 
+    if( m_songs.size() > 10 )
+        for( int i = 0; i < m_songs.size() - 10; i++ )
+            m_songs.pop_front();
+
     QVariantList songList = obj["song"].toList();
     foreach( const QVariant& item, songList ) {
         QVariantMap song = item.toMap();
@@ -157,6 +167,7 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
         s.albumtitle = song["albumtitle"].toString();
         s.like = song["like"].toBool();
         m_songs.push_back(s);
+        m_playListLength++;
         qDebug() << s.title;
     }
 
@@ -202,10 +213,17 @@ void DoubanFM::forgetButtonClicked()
 void DoubanFM::nextButtonClicked()
 {
     m_songIndex = (m_songIndex + 1);
-    if( m_songIndex % PLAYLIST_LENGTH == PLAYLIST_LENGTH-1 )
-        getNewPlayList( m_channels[m_channelIndex].channel_id );
 
     m_isNextButtonClicked = true;
+
+    //if( m_songIndex % PLAYLIST_LENGTH == PLAYLIST_LENGTH-1 )
+    //if( m_songIndex % m_playListLength == m_playListLength-1 )
+    if( m_songIndex % m_songs.length() == m_songs.length()-1 )
+    {
+        getNewPlayList( m_channels[m_channelIndex].channel_id );
+        qDebug() << "210" << m_playListLength << ' ' << m_songIndex;
+    }
+
     m_player->setCurrentSource( Phonon::MediaSource(m_songs[m_songIndex].url) );
     m_player->play();
 
@@ -222,16 +240,24 @@ void DoubanFM::nextButtonClicked()
 void DoubanFM::onPlayQueueFinished()
 {
     getNewPlayList( m_channels[m_channelIndex].channel_id );
+    qDebug() << "230";
 }
 
 void DoubanFM::increaseSongIndex(const Phonon::MediaSource &mo )
 {
     Q_UNUSED( mo );
     if ( !m_isNextButtonClicked )
+    {
         m_songIndex = (m_songIndex+1);
 
-    if( m_songIndex % PLAYLIST_LENGTH  == PLAYLIST_LENGTH-1 )
-        getNewPlayList( m_channels[m_channelIndex].channel_id );
+        //if( m_songIndex % PLAYLIST_LENGTH  == PLAYLIST_LENGTH-1 )
+        //if( m_songIndex % m_playListLength == m_playListLength-1 )
+        if( m_songIndex % m_songs.length() == m_songs.length()-1 )
+        {
+            getNewPlayList( m_channels[m_channelIndex].channel_id );
+            qDebug() << "242" << m_playListLength << ' ' << m_songIndex;
+        }
+    }
 
     m_isNextButtonClicked = false;
 }
@@ -257,6 +283,9 @@ void DoubanFM::updateAlbumCover( QNetworkReply *reply )
 
 void DoubanFM::switchChannel( int index )
 {
+    if( m_noSongPlaying )
+        return;
+
     m_player->stop();
     m_player->clearQueue();
     m_player->clear();
@@ -266,5 +295,6 @@ void DoubanFM::switchChannel( int index )
     m_songIndex = -1;
 
     m_channelIndex = index;
+    qDebug() << "283";
     getNewPlayList( m_channels[m_channelIndex].channel_id );
 }
