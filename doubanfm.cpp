@@ -222,10 +222,7 @@ void DoubanFM::nextButtonClicked()
 
     if( m_songIndex % m_songs.length() == m_songs.length()-1 )
     {
-        qDebug() << "next button disabled";
-        qDebug() << "m_songIndex" << m_songIndex;
-        qDebug() << "m_songs.length() = " << m_songs.length();
-
+        qDebug() << "next button Enabled( false )";
         ui.nextButton->setEnabled( false );
         getNewPlayList( m_channels[m_channelIndex].channel_id );
         qDebug() << "210" << m_playListLength << ' ' << m_songIndex;
