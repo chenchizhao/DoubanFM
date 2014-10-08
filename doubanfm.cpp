@@ -34,7 +34,6 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
     //         this, SLOT(enqueueNextSource()) );
     connect( this, SIGNAL(readyToPlay()),
              this, SLOT(playSong()) );
-    //connect( m_player, SIGNAL(finished()),
     connect( m_player, SIGNAL(aboutToFinish()),
              this, SLOT(onPlayQueueFinished()) );
     connect( m_player, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)),
@@ -48,6 +47,7 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
         m_managers[i] = 0;
     }
 
+    ui.nextButton->setEnabled( false );
     getChannels();
 }
 
@@ -101,7 +101,6 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
 
     qint32 channel = m_channels[m_channelIndex].channel_id;
     getNewPlayList( channel );
-    qDebug() << "102";
 }
 
 void DoubanFM::getNewPlayList( const qint32 &channel, qint32 kbps )
@@ -190,6 +189,11 @@ void DoubanFM::playSong()
         m_player->play();
     }
 
+    if( !(ui.nextButton->isEnabled()) )
+    {
+        ui.nextButton->setEnabled( true );
+    }
+
     m_noSongPlaying = false;
 
     ui.nameLabel->setText( m_songs[m_songIndex].title );
@@ -216,10 +220,13 @@ void DoubanFM::nextButtonClicked()
 
     m_isNextButtonClicked = true;
 
-    //if( m_songIndex % PLAYLIST_LENGTH == PLAYLIST_LENGTH-1 )
-    //if( m_songIndex % m_playListLength == m_playListLength-1 )
     if( m_songIndex % m_songs.length() == m_songs.length()-1 )
     {
+        qDebug() << "next button disabled";
+        qDebug() << "m_songIndex" << m_songIndex;
+        qDebug() << "m_songs.length() = " << m_songs.length();
+
+        ui.nextButton->setEnabled( false );
         getNewPlayList( m_channels[m_channelIndex].channel_id );
         qDebug() << "210" << m_playListLength << ' ' << m_songIndex;
     }
@@ -250,8 +257,6 @@ void DoubanFM::increaseSongIndex(const Phonon::MediaSource &mo )
     {
         m_songIndex = (m_songIndex+1);
 
-        //if( m_songIndex % PLAYLIST_LENGTH  == PLAYLIST_LENGTH-1 )
-        //if( m_songIndex % m_playListLength == m_playListLength-1 )
         if( m_songIndex % m_songs.length() == m_songs.length()-1 )
         {
             getNewPlayList( m_channels[m_channelIndex].channel_id );
