@@ -12,9 +12,7 @@
 DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
 {
     m_channelIndex = 0;
-    // the first time to play, signal currentSourceChanged is emitted,
-    // and correspondingly increaseSongIndex is called
-    m_songIndex = -1;
+    m_songIndex = 0;
     m_user = 0;
     m_process = 0;
     m_player = Phonon::createPlayer( Phonon::MusicCategory, Phonon::MediaSource("") );
@@ -30,14 +28,8 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
              this, SLOT(forgetButtonClicked()) );
     connect( ui.nextButton, SIGNAL(clicked()),
              this, SLOT(nextButtonClicked()) );
-    //connect( m_player, SIGNAL(aboutToFinish()),
-    //         this, SLOT(enqueueNextSource()) );
-    connect( this, SIGNAL(readyToPlay()),
-             this, SLOT(playSong()) );
-    connect( m_player, SIGNAL(aboutToFinish()),
-             this, SLOT(onPlayQueueFinished()) );
     connect( m_player, SIGNAL(currentSourceChanged(const Phonon::MediaSource &)),
-             this, SLOT(increaseSongIndex(const Phonon::MediaSource &)) );
+             this, SLOT(nextSong(const Phonon::MediaSource&)) );
     connect( m_pictManager, SIGNAL(finished(QNetworkReply *)),
              this, SLOT(updateAlbumCover(QNetworkReply *)) );
     connect( ui.channelBox, SIGNAL(currentIndexChanged(int)),
@@ -105,8 +97,6 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
 
 void DoubanFM::getNewPlayList( const qint32 &channel, qint32 kbps )
 {
-    qDebug() << "getNewPlayList called";
-
     QString args = QString( "?app_name=radio_desktop_win&version=100" )
         + QString("&user_id=") + ( (m_user) ? m_user->user_id : QString() )
         + QString("&expire=") + ( (m_user) ? m_user->expire : QString() )
@@ -147,7 +137,10 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
 
     if( m_songs.size() > 10 )
         for( int i = 0; i < m_songs.size() - 10; i++ )
+        {
             m_songs.pop_front();
+            --m_songIndex;
+        }
 
     QVariantList songList = obj["song"].toList();
     foreach( const QVariant& item, songList ) {
@@ -171,27 +164,27 @@ void DoubanFM::onReceivedNewList( QNetworkReply *reply )
     }
 
     reply->deleteLater();
-    emit readyToPlay();
+    playSong();
     qDebug() << "queue ready";
+    ui.nextButton->setEnabled( true );
 }
 
 void DoubanFM::playSong()
 {
     QString url;
-    foreach( const DoubanFMSong &song, m_songs )    
-    {
-        url = song.url;
-        m_player->enqueue(url);
-    }
+
+    //qDebug() << "playing index is " << m_songIndex;
+    url = m_songs[m_songIndex].url;
+
+    // block the currentSourceChanged signal, in case that
+    // function nextSong is called
+    bool whetherBlock = m_player->blockSignals( true );
+    m_player->enqueue(url);
+    m_player->blockSignals( whetherBlock );
 
     if( m_noSongPlaying )
     {
         m_player->play();
-    }
-
-    if( !(ui.nextButton->isEnabled()) )
-    {
-        ui.nextButton->setEnabled( true );
     }
 
     m_noSongPlaying = false;
@@ -216,52 +209,27 @@ void DoubanFM::forgetButtonClicked()
 
 void DoubanFM::nextButtonClicked()
 {
-    m_songIndex = (m_songIndex + 1);
-
-    m_isNextButtonClicked = true;
+    ++m_songIndex;
 
     if( m_songIndex % m_songs.length() == m_songs.length()-1 )
     {
-        qDebug() << "next button Enabled( false )";
         ui.nextButton->setEnabled( false );
         getNewPlayList( m_channels[m_channelIndex].channel_id );
-        qDebug() << "210" << m_playListLength << ' ' << m_songIndex;
     }
 
+    // block the currentSourceChanged signal, in case that
+    // function nextSong is called
+    bool whetherBlock = m_player->blockSignals( true );
+    m_player->enqueue(m_songs[m_songIndex].url);
     m_player->setCurrentSource( Phonon::MediaSource(m_songs[m_songIndex].url) );
     m_player->play();
+    m_player->blockSignals( whetherBlock );
 
     ui.nameLabel->setText( m_songs[m_songIndex].title );
-
     QString mod_url = m_songs[m_songIndex].picture;
-    // mpic: mini picture
-    // lpic: large picture
     mod_url.replace( "mpic", "lpic" );
 
     m_pictManager->get( QNetworkRequest(QUrl(mod_url)) );
-}
-
-void DoubanFM::onPlayQueueFinished()
-{
-    getNewPlayList( m_channels[m_channelIndex].channel_id );
-    qDebug() << "230";
-}
-
-void DoubanFM::increaseSongIndex(const Phonon::MediaSource &mo )
-{
-    Q_UNUSED( mo );
-    if ( !m_isNextButtonClicked )
-    {
-        m_songIndex = (m_songIndex+1);
-
-        if( m_songIndex % m_songs.length() == m_songs.length()-1 )
-        {
-            getNewPlayList( m_channels[m_channelIndex].channel_id );
-            qDebug() << "242" << m_playListLength << ' ' << m_songIndex;
-        }
-    }
-
-    m_isNextButtonClicked = false;
 }
 
 void DoubanFM::updateAlbumCover( QNetworkReply *reply )
@@ -285,18 +253,31 @@ void DoubanFM::updateAlbumCover( QNetworkReply *reply )
 
 void DoubanFM::switchChannel( int index )
 {
+    // when a default channel is selected, a currentIndexChanged signal will be emited
     if( m_noSongPlaying )
         return;
+
+    // block the currentSourceChanged signal, in case that
+    // function nextSong is called
+    bool whetherBlock = m_player->blockSignals( true );
 
     m_player->stop();
     m_player->clearQueue();
     m_player->clear();
     m_songs.clear();
 
-    m_noSongPlaying = true;
-    m_songIndex = -1;
+    m_noSongPlaying = true; // let m_player->play() called
+    m_songIndex = 0;
 
     m_channelIndex = index;
-    qDebug() << "283";
     getNewPlayList( m_channels[m_channelIndex].channel_id );
+
+    // restore block condition
+    m_player->blockSignals( whetherBlock );
+}
+
+void DoubanFM::nextSong(const Phonon::MediaSource& ms)
+{
+    Q_UNUSED( ms );
+    nextButtonClicked(); 
 }
