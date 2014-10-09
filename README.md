@@ -16,9 +16,7 @@ Douban FM客户端Linux版
 
 音量控制；
 
-暂停；
-
-点击“下一首”过快会导致崩溃，需要提前disable“下一首”按钮。
+暂停。
 
 Qt version: 4.6.3
 
