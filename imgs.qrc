@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/unlike.png</file>
+        <file>img/like.png</file>
+        <file>img/trash_can_clicked.png</file>
+        <file>img/trash_can_normal.png</file>
+        <file>img/next_clicked.png</file>
+        <file>img/next_normal.png</file>
+        <file>img/pause_normal.png</file>
+        <file>img/channel.png</file>
+        <file>img/bg.png</file>
+        <file>icon.png</file>
+        <file>img/like_disabled.png</file>
+    </qresource>
+</RCC>

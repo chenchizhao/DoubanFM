@@ -5,6 +5,7 @@
 !*.cpp
 !*.pro
 !*.ui
+!*.qrc
 moc*.h
 moc*.cpp
 ui_*.h
