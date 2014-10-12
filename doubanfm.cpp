@@ -41,27 +41,7 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
 
     ui.nextButton->setEnabled( false );
 
-    //QPixmap pix(":/img/unlike.png");
-    //QIcon icon(pix);
-    //ui.favoriteButton->setIcon(QIcon(QPixmap(":/img/like.png")));
-    //ui.favoriteButton->setIcon(icon);
-    //ui.favoriteButton->setIconSize(QSize(0, 0));
-    //ui.favoriteButton->setIconSize(pix.size());
-    
-    //QLabel *background = new QLabel( this );
-    //QPixmap pixmap( ":/img/bg.png" );
-    //
-    //pixmap.scaled( this->size() );
-    //qDebug() << this->size();
-    //background->setPixmap( pixmap );
-    //background->stackUnder( ui.nextButton );
-    //background->stackUnder( ui.nameLabel );
-    //background->stackUnder( ui.albumLabel );
-    //background->stackUnder( ui.channelBox );
-
-    //this->setStyleSheet("border-image: url(:/img/bg.png)");
-
-    ui.favoriteButton->setCheckable(true);
+    ui.favoriteButton->setCheckable( true );
     ui.favoriteButton->setStyleSheet(
             "QPushButton{border-image: url(:/img/unlike.png);}"
             "QPushButton:hover{border-image: url(:/img/like_disabled.png);}"
@@ -78,8 +58,9 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
             "QPushButton:hover{border-image: url(:/img/next_clicked.png);}"
             );
 
-    getChannels();
+    this->setFixedSize( this->width(), this->height() );
 
+    getChannels();
 }
 
 DoubanFM::~DoubanFM()
