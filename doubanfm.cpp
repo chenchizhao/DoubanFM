@@ -40,12 +40,51 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
     }
 
     ui.nextButton->setEnabled( false );
+
+    //QPixmap pix(":/img/unlike.png");
+    //QIcon icon(pix);
+    //ui.favoriteButton->setIcon(QIcon(QPixmap(":/img/like.png")));
+    //ui.favoriteButton->setIcon(icon);
+    //ui.favoriteButton->setIconSize(QSize(0, 0));
+    //ui.favoriteButton->setIconSize(pix.size());
+    
+    //QLabel *background = new QLabel( this );
+    //QPixmap pixmap( ":/img/bg.png" );
+    //
+    //pixmap.scaled( this->size() );
+    //qDebug() << this->size();
+    //background->setPixmap( pixmap );
+    //background->stackUnder( ui.nextButton );
+    //background->stackUnder( ui.nameLabel );
+    //background->stackUnder( ui.albumLabel );
+    //background->stackUnder( ui.channelBox );
+
+    //this->setStyleSheet("border-image: url(:/img/bg.png)");
+
+    ui.favoriteButton->setCheckable(true);
+    ui.favoriteButton->setStyleSheet(
+            "QPushButton{border-image: url(:/img/unlike.png);}"
+            "QPushButton:hover{border-image: url(:/img/like_disabled.png);}"
+            "QPushButton:pressed{border-image: url(:/img/like_disabled.png);}"
+            "QPushButton:checked{border-image: url(:/img/like.png);}"
+            "QPushButton:disabled{border-image: url(:/img/like_disabled.png);}");
+
+    ui.forgetButton->setStyleSheet(
+            "QPushButton{border-image: url(:/img/trash_can_normal.png);}"
+            "QPushButton:hover{border-image: url(:/img/trash_can_clicked.png);}");
+
+    ui.nextButton->setStyleSheet(
+            "QPushButton{border-image: url(:/img/next_normal.png);}"
+            "QPushButton:hover{border-image: url(:/img/next_clicked.png);}"
+            );
+
     getChannels();
+
 }
 
 DoubanFM::~DoubanFM()
 {
-    
+
 }
 
 void DoubanFM::getChannels()
@@ -53,7 +92,7 @@ void DoubanFM::getChannels()
     if( m_managers[6] == 0 ) {
         m_managers[6] = new QNetworkAccessManager( this );
         connect( m_managers[6], SIGNAL(finished(QNetworkReply *)),
-                 this, SLOT(onReceivedChannels(QNetworkReply *)) );
+                this, SLOT(onReceivedChannels(QNetworkReply *)) );
     }
 
     m_managers[6]->get( QNetworkRequest(QUrl(DOUBAN_FM_API_CHANNEL)) );
