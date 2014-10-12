@@ -4,6 +4,10 @@ Douban FM客户端Linux版
 
 目前只有最基本的播放功能
 
+## 截图
+
+![截图](https://raw.githubusercontent.com/YiShuiHanXL/DoubanFM/master/snapshot.png)
+
 ## TODO:
 
 登陆；
