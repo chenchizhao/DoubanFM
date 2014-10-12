@@ -8,6 +8,10 @@ Douban FM客户端Linux版
 
 ![截图](https://raw.githubusercontent.com/YiShuiHanXL/DoubanFM/master/snapshot.png)
 
+所用图片资源来自这里，并感谢：
+
+https://github.com/zonyitoo/doubanfm-qt
+
 ## TODO:
 
 登陆；
