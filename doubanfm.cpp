@@ -83,9 +83,16 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
 {
     QJson::Parser parser;
     bool ok;
+    qDebug() << "QNetwork error:" << reply->error();
 
     QByteArray json = reply->readAll();
+    if (json.isEmpty())
+        qDebug() << "json is empty";
+    
     QVariant result = parser.parse( json, &ok );
+
+    if (result.isNull())
+        qDebug() << "result is NULL";
 
     if( !ok ) {
         qFatal( "onReceivedChannels: an error occured during parsing" );
@@ -93,7 +100,9 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
     }
 
     QVariantMap obj = result.toMap();
+    qDebug() << "obj size = " << obj.size();
     QVariantList chList = obj["channels"].toList();
+
     foreach( const QVariant& item, chList ) {
         QVariantMap ch = item.toMap();
         DoubanChannel dc;
@@ -111,7 +120,10 @@ void DoubanFM::onReceivedChannels( QNetworkReply *reply )
 
     reply->deleteLater();
 
+    qDebug() << "m_channelIndex = " << m_channelIndex;
+
     qint32 channel = m_channels[m_channelIndex].channel_id;
+
     getNewPlayList( channel );
 }
 
