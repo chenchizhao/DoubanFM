@@ -28,7 +28,7 @@ https://github.com/zonyitoo/doubanfm-qt
 
 Qt version: 4.6.3
 
-依赖：phonon libphonon-dev libqt4-phonon
+依赖：phonon libphonon-dev libqt4-phonon libqjson-dev
 
 ## 安装方法
 ```bash
