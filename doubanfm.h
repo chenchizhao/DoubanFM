@@ -1,11 +1,11 @@
 #ifndef DOUBANFM_H
 #define DOUBANFM_H
 
-#include <QDialog>
 #include "ui_doubanfmdialog.h"
+#include "douban_types.h"
+#include <QDialog>
 #include <QNetworkAccessManager>
 #include <QList>
-#include "douban_types.h"
 #include <QProcess>
 #include <phonon/mediaobject.h>
 #include <QComboBox>
