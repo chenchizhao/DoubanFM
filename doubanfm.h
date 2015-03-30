@@ -56,7 +56,7 @@ class DoubanFM : public QDialog
         int m_channelIndex;
         int m_songIndex;
         DoubanUser *m_user;
-        QProcess *m_process;
+        //QProcess *m_process;
         Phonon::MediaObject *m_player;
 
         bool m_isNextButtonClicked;

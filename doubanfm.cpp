@@ -14,7 +14,7 @@ DoubanFM::DoubanFM( QWidget *parent ) : QDialog( parent )
     m_channelIndex = 0;
     m_songIndex = 0;
     m_user = 0;
-    m_process = 0;
+    //m_process = 0;
     m_player = Phonon::createPlayer( Phonon::MusicCategory, Phonon::MediaSource("") );
     m_isNextButtonClicked = false;
     m_pictManager = new QNetworkAccessManager( this );
